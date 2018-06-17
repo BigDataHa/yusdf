@@ -1,0 +1,7 @@
+*build*
+*.o
+*.out
+*.a
+*.so
+*.vscode
+living_room_traj0_frei_png*
