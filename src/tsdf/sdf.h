@@ -144,6 +144,7 @@ namespace sdf
 			_vertice_weight=NULL;
 			_hascolor=false;
 			_vertice_color=NULL;
+			setIndexOffset(0.0,0.0,0.0);
 		}
 		volumme_t(int xsize ,int ysize  ,int zsize, bool hascolor = false)
 		:_xsize(xsize),_ysize(ysize),_zsize(zsize),_size(xsize*ysize*zsize),_hascolor(hascolor)//,_unit(scale3d_t(1,1,0.0001))
@@ -157,6 +158,7 @@ namespace sdf
 				_vertice_color = new RGB_t[_size];
 			else
 				_vertice_color=NULL;
+			setIndexOffset(0.0,0.0,0.0);
 		}
 		~volumme_t()
 		{
@@ -169,6 +171,8 @@ namespace sdf
 		}
 		int setOffset(const point3d_t &offset);
 		int setOffset(const double &x,const double &y,const double &z);
+		int setIndexOffset(const point3d_t &ioffset);
+		int setIndexOffset(const double &x,const double &y,const double &z);
 		int setScale(const scale3d_t &scale);
 		int setScale(const double &xscale,const double &yscale,const double &zscale);
 		// int setUnit(const scale3d_t &unit);
@@ -176,6 +180,7 @@ namespace sdf
 		int setCameraIntrins(const cameraIntrin_t &intrins);
 		int setCameraIntrins(const double &fx,const double &fy,const double &cx,const double &cy);
 		const point3d_t &getOffset() const;
+		const point3d_t &getIndexOffset() const;
 		const scale3d_t &getScale() const;
 		// const scale3d_t &getUnit()const;
 		const cameraIntrin_t &getCameraIntrins()const;
@@ -217,6 +222,7 @@ namespace sdf
 		scale3d_t _scale; //缩放倍数，可能>1或<1,单位为：米
 		// scale3d_t _unit; 
 		point3d_t _offset;
+		point3d_t _index_offset;
 		cameraIntrin_t _intrins;
 		// vertex_t *_vertice;
 		double *_vertice_tsdf;

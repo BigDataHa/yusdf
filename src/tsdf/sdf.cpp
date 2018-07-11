@@ -26,6 +26,17 @@ namespace sdf
 		_offset._z=z;
 		return 0;
 	}
+	int volumme_t::setIndexOffset(const point3d_t &offset)
+	{
+		return setIndexOffset(offset._x,offset._y,offset._z);
+	}
+	int volumme_t::setIndexOffset(const double &x,const double &y,const double &z)
+	{
+		_index_offset._x=x;
+		_index_offset._y=y;
+		_index_offset._z=z;
+		return 0;
+	}
 	int volumme_t::setScale(const scale3d_t &scale)
 	{
 		return setScale(scale._xscale,scale._yscale,scale._zscale);
@@ -37,19 +48,7 @@ namespace sdf
 		_scale._xscale=xscale;
 		return 0;
 	}
-/*
-	// int volumme_t::setUnit(const scale3d_t &unit)
-	// {
-	// 	return setUnit(unit._xscale,unit._yscale,unit._zscale);
-	// }
-	// int volumme_t::setUnit(const double &xunit,const double &yunit,const double &zunit)
-	// {
-	// 	_unit._xscale=xunit;
-	// 	_unit._yscale=yunit;
-	// 	_unit._zscale=zunit;
-	// 	return 0;
-	// }
-*/
+
 	int volumme_t::setCameraIntrins(const cameraIntrin_t &intrins)
 	{
 		return setCameraIntrins(intrins._fx,intrins._fy,intrins._cx,intrins._cy);
@@ -67,6 +66,12 @@ namespace sdf
 	{
 		return _offset;
 	}
+
+	const point3d_t &volumme_t::getIndexOffset() const
+	{
+		return _index_offset;
+	}
+
 	const scale3d_t &volumme_t::getScale() const
 	{
 		return _scale;
@@ -93,24 +98,7 @@ namespace sdf
 	{
 		return (this->operator[](point3d2index3d(point)));
 	}
-/*
-	// int volumme_t::calVertex(double &tsdf, double &weight, const double &diff, const double &delta, const double &eta)
-	// {
-	// 	// if(diff >= delta)
-	// 	// 	tsdf = 1.0;
-	// 	// else if(diff < -delta)
-	// 	// 	tsdf = -1.0;
-	// 	// else
-	// 	// 	tsdf = diff /delta;
-	// 	// if(diff > -eta)
-	// 	// 	weight = 1;
-	// 	// else
-	// 	// 	weight = 0;
-	// 	tsdf = fminl(1.0,diff/delta);
-	// 	weight =1;
-	// 	return 0;
-	// }
-*/
+
 	inline int volumme_t::index3d_2_1d(const index3d_t &index)
 	{
 		int ret=0;
@@ -124,9 +112,8 @@ namespace sdf
 	}
 	inline index3d_t volumme_t::point3d2index3d(const point3d_t &point)
 	{
-		point3d_t tmp(0.5,0.5,0.5);
 		point3d_t tmp1 = point;
-		point3d_t tmp2 = (tmp1 - _offset)/_scale - tmp;
+		point3d_t tmp2 = (tmp1 - _offset)/_scale - _index_offset;
 		index3d_t ret;
 		ret._x = (int)tmp2._x>0?(int)tmp2._x:0;
 		ret._y = (int)tmp2._y>0?(int)tmp2._y:0;
@@ -135,9 +122,8 @@ namespace sdf
 	}
 	inline void volumme_t::point3d2index3d(index3d_t &ret,const point3d_t &point)
 	{
-		point3d_t tmp(0.5,0.5,0.5);
 		point3d_t tmp1 = point;
-		point3d_t tmp2 = (tmp1 - _offset)/_scale - tmp;
+		point3d_t tmp2 = (tmp1 - _offset)/_scale - _index_offset;
 		// ret._x = (int)tmp2._x;
 		// ret._y = (int)tmp2._y;
 		// ret._z = (int)tmp2._z;
@@ -147,10 +133,9 @@ namespace sdf
 	}
 	inline void volumme_t::index3d2point3d(point3d_t &ret,const index3d_t &index)
 	{
-		point3d_t tmp1(0.5,0.5,0.5);
 		index3d_t tmp = index;
 		point3d_t tmp2(tmp._x,tmp._y,tmp._z);
-		ret = (tmp1+tmp2)*_scale + _offset;
+		ret = (_index_offset+tmp2)*_scale + _offset;
 	}
 
 	inline void volumme_t::Project2CurCamera(point3d_t &ret,const Eigen::Affine3d &pose, const point3d_t &point)
@@ -161,7 +146,6 @@ namespace sdf
 		tmp[0] = point._x - pose(0,3);
 		tmp[1] = point._y - pose(1,3);
 		tmp[2] = point._z - pose(2,3);
-
 		ret._x = pose(0,0)*tmp[0] + pose(1,0)*tmp[1] + pose(2,0)*tmp[2];
 		ret._y = pose(0,1)*tmp[0] + pose(1,1)*tmp[1] + pose(2,1)*tmp[2];
 		ret._z = pose(0,2)*tmp[0] + pose(1,2)*tmp[1] + pose(2,2)*tmp[2];
@@ -226,15 +210,15 @@ namespace sdf
 		int nindex;
 		for(int k = 0; k<_zsize; ++k)
 		{
-			voxel._z = (k+0.5)*(_scale._zscale) + _offset._z;
+			voxel._z = (k+_index_offset._z)*(_scale._zscale) + _offset._z;
 			voxel_tmp._z = voxel._z - pose2base(2,3);
 			for(int j = 0; j<_ysize; ++j)
 			{
-				voxel._y = (j+0.5)*(_scale._yscale) + _offset._y;
+				voxel._y = (j+_index_offset._y)*(_scale._yscale) + _offset._y;
 				voxel_tmp._y = voxel._y - pose2base(1,3);
 				for(int i = 0; i<_xsize; ++i)
 				{
-					voxel._x = (i+0.5)*(_scale._xscale) + _offset._x;
+					voxel._x = (i+_index_offset._x)*(_scale._xscale) + _offset._x;
 					voxel_tmp._x = voxel._x - pose2base(0,3);
 					voxel._x = pose2base(0,0)*voxel_tmp._x + pose2base(1,0)*voxel_tmp._y + pose2base(2,0)*voxel_tmp._z;
 					voxel._y = pose2base(0,1)*voxel_tmp._x + pose2base(1,1)*voxel_tmp._y + pose2base(2,1)*voxel_tmp._z;
@@ -330,15 +314,15 @@ namespace sdf
 		int nindex;
 		for(int k = 0; k<_zsize; ++k)
 		{
-			voxel._z = (k+0.5)*(_scale._zscale) + _offset._z;
+			voxel._z = (k+_index_offset._z)*(_scale._zscale) + _offset._z;
 			voxel_tmp._z = voxel._z - pose2base[2*4+3];
 			for(int j = 0; j<_ysize; ++j)
 			{
-				voxel._y = (j+0.5)*(_scale._yscale) + _offset._y;
+				voxel._y = (j+_index_offset._y)*(_scale._yscale) + _offset._y;
 				voxel_tmp._y = voxel._y - pose2base[1*4+3];
 				for(int i = 0; i<_xsize; ++i)
 				{
-					voxel._x = (i+0.5)*(_scale._xscale) + _offset._x;
+					voxel._x = (i+_index_offset._x)*(_scale._xscale) + _offset._x;
 					voxel_tmp._x = voxel._x - pose2base[0*4+3];
 					voxel._x = pose2base[0*4+0]*voxel_tmp._x + pose2base[1*4+0]*voxel_tmp._y + pose2base[2*4+0]*voxel_tmp._z;
 					voxel._y = pose2base[0*4+1]*voxel_tmp._x + pose2base[1*4+1]*voxel_tmp._y + pose2base[2*4+1]*voxel_tmp._z;
@@ -386,7 +370,7 @@ namespace sdf
 		for(int z=0;z<_zsize;++z)
 		{
 			//计算x和y的范围
-			voxel._z = (z+0.5)*(_scale._zscale) + _offset._z;
+			voxel._z = (z+_index_offset._z)*(_scale._zscale) + _offset._z;
 			voxel_tmp._z = voxel._z - pose2base(2,3);
 			double Zw = voxel._z;
 
@@ -408,11 +392,11 @@ namespace sdf
 			// std::cout<<"start y:"<<Start._y<<" end y:"<< End._y <<endl;
 			for(int y = Start._y;y<End._y&&y<_ysize;++y)
 			{
-				voxel._y = (y+0.5)*(_scale._yscale) + _offset._y;
+				voxel._y = (y+_index_offset._y)*(_scale._yscale) + _offset._y;
 				voxel_tmp._y = voxel._y - pose2base(1,3);
 				for(int x = Start._x;x<End._x&&x<_xsize;++x)
 				{
-					voxel._x = (x+0.5)*(_scale._xscale) + _offset._x;
+					voxel._x = (x+_index_offset._x)*(_scale._xscale) + _offset._x;
 					voxel_tmp._x = voxel._x - pose2base(0,3);
 					voxel._x = pose2base(0,0)*voxel_tmp._x + pose2base(1,0)*voxel_tmp._y + pose2base(2,0)*voxel_tmp._z;
 					voxel._y = pose2base(0,1)*voxel_tmp._x + pose2base(1,1)*voxel_tmp._y + pose2base(2,1)*voxel_tmp._z;
@@ -456,7 +440,7 @@ namespace sdf
 		for(int z=0;z<_zsize;++z)
 		{
 			//计算x和y的范围
-			voxel._z = (z+0.5)*(_scale._zscale) + _offset._z;
+			voxel._z = (z+_index_offset._z)*(_scale._zscale) + _offset._z;
 			voxel_tmp._z = voxel._z - pose2base[2*4+3];
 			double Zw = voxel._z;
 
@@ -479,11 +463,11 @@ namespace sdf
 
 			for(int y = Start._y;y<End._y&&y<_ysize;++y)
 			{
-				voxel._y = (y+0.5)*(_scale._yscale) + _offset._y;
+				voxel._y = (y+_index_offset._y)*(_scale._yscale) + _offset._y;
 				voxel_tmp._y = voxel._y - pose2base[1*4+3];
 				for(int x = Start._x;x<End._x&&x<_xsize;++x)
 				{
-					voxel._x = (x+0.5)*(_scale._xscale) + _offset._x;
+					voxel._x = (x+_index_offset._x)*(_scale._xscale) + _offset._x;
 					voxel_tmp._x = voxel._x - pose2base[0*4+3];
 					voxel._x = pose2base[0*4+0]*voxel_tmp._x + pose2base[1*4+0]*voxel_tmp._y + pose2base[2*4+0]*voxel_tmp._z;
 					voxel._y = pose2base[0*4+1]*voxel_tmp._x + pose2base[1*4+1]*voxel_tmp._y + pose2base[2*4+1]*voxel_tmp._z;
@@ -805,7 +789,7 @@ namespace sdf
 
 		for(int z=0;z<_zsize;++z)
 		{
-			voxel._z = (z+0.5)*(_scale._zscale) + _offset._z;
+			voxel._z = (z+_index_offset._z)*(_scale._zscale) + _offset._z;
 			voxel_tmp._z = voxel._z - pose2base(2,3);
 			double Zw = voxel._z;
 
@@ -842,7 +826,7 @@ namespace sdf
 
 		for(int z=0;z<_zsize;++z)
 		{
-			voxel._z = (z+0.5)*(_scale._zscale) + _offset._z;
+			voxel._z = (z+_index_offset._z)*(_scale._zscale) + _offset._z;
 			voxel_tmp._z = voxel._z - pose2base[2*4+3];
 			double Zw = voxel._z;
 
@@ -873,7 +857,7 @@ namespace sdf
 		for(int y=StartXY._v;y<EndXY._v&&y<_ysize;++y)
 		{
 			index._y = y;
-			voxel._y = (y+0.5)*(_scale._yscale) + _offset._y;
+			voxel._y = (y+_index_offset._y)*(_scale._yscale) + _offset._y;
 			voxel_tmp._y = voxel._y - pose2base(1,3);
 			IntegrateX(depth,pose2base,voxel,voxel_tmp,index,StartXY._u,EndXY._u);
 		}
@@ -886,7 +870,7 @@ namespace sdf
 		for(int y=StartXY._v;y<EndXY._v&&y<_ysize;++y)
 		{
 			index._y = y;
-			voxel._y = (y+0.5)*(_scale._yscale) + _offset._y;
+			voxel._y = (y+_index_offset._y)*(_scale._yscale) + _offset._y;
 			voxel_tmp._y = voxel._y - pose2base[1*4+3];
 			IntegrateX(depth,pose2base,voxel,voxel_tmp,index,StartXY._u,EndXY._u);
 		}
@@ -905,7 +889,7 @@ namespace sdf
 		int nindexbase = index3d_2_1d(index);
 		for(int x = Start;x<End&&x<_xsize;++x)
 		{
-			voxel._x = (x+0.5)*(_scale._xscale) + _offset._x;
+			voxel._x = (x+_index_offset._x)*(_scale._xscale) + _offset._x;
 			voxel_tmp._x = voxel._x - pose2base(0,3);
 			voxel._x = pose2base(0,0)*voxel_tmp._x + pose2base(1,0)*voxel_tmp._y + pose2base(2,0)*voxel_tmp._z;
 			voxel._y = pose2base(0,1)*voxel_tmp._x + pose2base(1,1)*voxel_tmp._y + pose2base(2,1)*voxel_tmp._z;
@@ -941,7 +925,7 @@ namespace sdf
 		double tsdf = 0, weight =0;
 		for(int x = Start;x<End&&x<_xsize;++x)
 		{
-			voxel._x = (x+0.5)*(_scale._xscale) + _offset._x;
+			voxel._x = (x+_index_offset._x)*(_scale._xscale) + _offset._x;
 			voxel_tmp._x = voxel._x - pose2base[0*4+3];
 			voxel._x = pose2base[0*4+0]*voxel_tmp._x + pose2base[1*4+0]*voxel_tmp._y + pose2base[2*4+0]*voxel_tmp._z;
 			voxel._y = pose2base[0*4+1]*voxel_tmp._x + pose2base[1*4+1]*voxel_tmp._y + pose2base[2*4+1]*voxel_tmp._z;

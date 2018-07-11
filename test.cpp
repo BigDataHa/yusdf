@@ -7,7 +7,7 @@
  ************************************************************************/
 
 #include<iostream>
-#include "sdf.h"
+#include "src/tsdf/sdf.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 #include <fstream>
@@ -47,6 +47,7 @@ int main(int argc, char const *argv[])
 	tsdf.setCameraIntrins(5.85000000e+02,5.85000000e+02,3.20000000e+02,2.40000000e+02);
 	tsdf.setScale(voxel_size,voxel_size,voxel_size);
 	tsdf.setOffset(voxel_grid_origin_x,voxel_grid_origin_y,voxel_grid_origin_z);
+	tsdf.setIndexOffset(0.5,0.5,0.5);
 	// tsdf.setuvStep(2,2);
 	std::ostringstream base_frame_prefix;
 	base_frame_prefix << std::setw(6) << std::setfill('0') << base_frame_idx;
@@ -63,7 +64,7 @@ int main(int argc, char const *argv[])
 		curr_frame_prefix << std::setw(6) << std::setfill('0') << frame_idx;
 		// // Read current frame depth
 		std::string depth_im_file = data_path + "/frame-" + curr_frame_prefix.str() + ".depth.png";
-		cv::Mat depth = cv::imread(depth_im_file,CV_LOAD_IMAGE_UNCHANGED);
+		cv::Mat depth = cv::imread(depth_im_file,cv::IMREAD_UNCHANGED);
 		if (depth.empty()) {
 			std::cout << "Error: depth image file not read!" << std::endl;
 			cv::waitKey(0);
