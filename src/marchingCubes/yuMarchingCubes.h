@@ -18,8 +18,12 @@ namespace sdf
 	public:
 		yuMCubes_t(){}
 		~yuMCubes_t(){}
-		int setIsoleval() ;                                    
-		
+
+
+		int setIsoleval(const double &isoleval);
+		int setThreshold(const double &threshold);
+		double getIsoleval() const;
+		double getThreshold() const;
 	protected:
 		double _isoleval;
 		double _threshold;

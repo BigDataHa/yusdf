@@ -9,6 +9,25 @@
 
 namespace sdf
 {
+	int yuMCubes_t::setIsoleval(const double &isoleval)
+	{
+		_isoleval = isoleval;
+		return 0;
+	}
+	int yuMCubes_t::setThreshold(const double &threshold)
+	{
+		_threshold = threshold;
+		return 0;
+	}
+	double yuMCubes_t::getIsoleval() const
+	{
+		return _isoleval;
+	}
+	double yuMCubes_t::getThreshold() const
+	{
+		return _threshold;
+	}
+
 	
 }
 
