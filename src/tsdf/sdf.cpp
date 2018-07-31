@@ -99,17 +99,7 @@ namespace sdf
 		return (this->operator[](point3d2index3d(point)));
 	}
 
-	inline int volumme_t::index3d_2_1d(const index3d_t &index)
-	{
-		int ret=0;
-		ret = index._z*_xsize*_ysize + index._y*_xsize +index._x;
-		return ret;
-	}
-
-	inline void volumme_t::index3d_2_1d(int &ret,const index3d_t &index)
-	{
-		ret = index._z*_xsize*_ysize + index._y*_xsize +index._x;
-	}
+	
 	inline index3d_t volumme_t::point3d2index3d(const point3d_t &point)
 	{
 		point3d_t tmp1 = point;
@@ -131,12 +121,7 @@ namespace sdf
 		ret._y = (int)tmp2._y>0?(int)tmp2._y:0;
 		ret._z = (int)tmp2._z>0?(int)tmp2._z:0;
 	}
-	inline void volumme_t::index3d2point3d(point3d_t &ret,const index3d_t &index)
-	{
-		index3d_t tmp = index;
-		point3d_t tmp2(tmp._x,tmp._y,tmp._z);
-		ret = (_index_offset+tmp2)*_scale + _offset;
-	}
+	
 
 	inline void volumme_t::Project2CurCamera(point3d_t &ret,const Eigen::Affine3d &pose, const point3d_t &point)
 	{

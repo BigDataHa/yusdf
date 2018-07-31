@@ -8,6 +8,7 @@
 
 #include<iostream>
 #include "src/tsdf/sdf.h"
+#include "src/marchingCubes/yuMarchingCubes.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 #include <fstream>
@@ -84,9 +85,9 @@ int main(int argc, char const *argv[])
 				pose(i,j) = cam2base[i*4+j];
 		gettimeofday(&t1,NULL);
 		if(frame_idx == first_frame_idx)
-			tsdf.IntegrateUV(depth,pose);
+			tsdf.Integrate(depth,pose);
 		else
-			tsdf.IntegrateUV(depth,pose);
+			tsdf.Integrate(depth,pose);
 		gettimeofday(&t2,NULL);
 		double t_gap =(double) ((double)(t2.tv_sec - t1.tv_sec) + (double)(t2.tv_usec - t1.tv_usec)/1000000.0f);
 		std::cout << "frame: " << frame_idx<<"; time used: "<<t_gap<<"s " <<std::endl;
@@ -118,6 +119,9 @@ int main(int argc, char const *argv[])
 		outFile.write((char*)&tmp, sizeof(float));
 	}
 	outFile.close();
+	// sdf::yuMCubes_t mc;
+	// mc.calIsoPointCloud(true);
+	// mc.saveIsoPointCloud("isopc.ply");
 	return 0;
 }
 

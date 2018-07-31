@@ -72,6 +72,11 @@ namespace sdf
 			point3d_t ret((this->_x * scale._xscale),(this->_y * scale._yscale), (this->_z * scale._zscale));
 			return ret;
 		}
+		point3d_t operator*(double &t)
+		{
+			point3d_t ret((this->_x * t),(this->_y*t),(this->_z *t));
+			return ret;
+		}
 	public:
 		double _x, _y, _z; 
 	};
@@ -189,6 +194,16 @@ namespace sdf
 		// const vertex_t &getVertex(const point3d_t &point);
 		// const vertex_t &getVertex(const index3d_t &index);
 		// const vertex_t &getVertex(const int x,const int y,const int z);
+		double getVerticeTsdfval(int i,int j,int k)
+		{
+			int nindex = index3d_2_1d(index3d_t(i,j,k));
+			return _vertice_tsdf[nindex];
+		}
+		double getVerticeWeightval(int i,int j, int k)
+		{
+			int nindex = index3d_2_1d(index3d_t(i,j,k));
+			return _vertice_weight[nindex];
+		}
 		double *getVerticeTsdf()
 		{
 			return _vertice_tsdf;
@@ -201,11 +216,25 @@ namespace sdf
 		// int calVertex(double &tsdf, double &weight, const double &diff, const double &delta, const double &eta);
 
 	protected:
-		inline int index3d_2_1d(const index3d_t &index);
-		inline void index3d_2_1d(int &ret,const index3d_t &index);
+		inline int index3d_2_1d(const index3d_t &index)
+		{
+			int ret=0;
+			ret = index._z*_xsize*_ysize + index._y*_xsize +index._x;
+			return ret;
+		}
+		inline void index3d_2_1d(int &ret,const index3d_t &index)
+		{
+			ret = index._z*_xsize*_ysize + index._y*_xsize +index._x;
+		}
 		inline index3d_t point3d2index3d(const point3d_t &point);
 		inline void point3d2index3d(index3d_t &ret,const point3d_t &point);
-		inline void index3d2point3d(point3d_t &ret,const index3d_t &index);
+		
+		inline void index3d2point3d(point3d_t &ret,const index3d_t &index)
+		{
+			index3d_t tmp = index;
+			point3d_t tmp2(tmp._x,tmp._y,tmp._z);
+			ret = (_index_offset+tmp2)*_scale + _offset;
+		}
 		inline void Project2CurCamera(point3d_t &ret,const Eigen::Affine3d &pose, const point3d_t &point);
 		inline void Project2CurCamera(point3d_t &ret,const double *pose, const point3d_t &point);
 		inline point3d_t Project2BaseCamera(const Eigen::Affine3d &pose, const point3d_t &point);
@@ -235,7 +264,7 @@ namespace sdf
 	{
 	public:
 		sdf_t()
-		:volumme_t(512,512,512),_delta(0.03),_eta(0.03),_maxDepth(6),_minDepth(0),_uStep(2),_vStep(2),_frames_intefrated(0)
+		:volumme_t(512,512,512),_delta(_scale._zscale*4),_eta(_scale._zscale*4),_maxDepth(6),_minDepth(0),_uStep(2),_vStep(2),_frames_intefrated(0)
 		{
 			// _verticeReach = new unsigned char[_size];
 			// memset(_verticeReach,0,_size*sizeof(unsigned char));

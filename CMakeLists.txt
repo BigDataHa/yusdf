@@ -33,6 +33,6 @@ if(NOT WIN32)
 endif()
 
 
-add_executable(SDF_test test.cpp src/tsdf/sdf.cpp)
+add_executable(SDF_test test.cpp src/tsdf/sdf.cpp src/marchingCubes/yuMarchingCubes.cpp)
 
 target_link_libraries(SDF_test ${DEPENDENCIES})

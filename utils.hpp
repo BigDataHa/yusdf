@@ -1,5 +1,6 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
+#include <fstream>
 
 void SaveVoxelGrid2SurfacePointCloud(const std::string &file_name, int voxel_grid_dim_x, int voxel_grid_dim_y, int voxel_grid_dim_z,
                                      float voxel_size, float voxel_grid_origin_x, float voxel_grid_origin_y, float voxel_grid_origin_z,
@@ -22,6 +23,10 @@ void SaveVoxelGrid2SurfacePointCloud(const std::string &file_name, int voxel_gri
   fprintf(fp, "property float z\n");
   fprintf(fp, "end_header\n");
 
+  std::ofstream outFile("isozero.bin", std::ios::binary | std::ios::out);
+  float tmp = num_pts;
+  outFile.write((char*)&tmp,sizeof(float));
+
   // Create point cloud content for ply file
   for (int i = 0; i < voxel_grid_dim_x * voxel_grid_dim_y * voxel_grid_dim_z; i++) {
 
@@ -40,8 +45,13 @@ void SaveVoxelGrid2SurfacePointCloud(const std::string &file_name, int voxel_gri
       fwrite(&pt_base_x, sizeof(float), 1, fp);
       fwrite(&pt_base_y, sizeof(float), 1, fp);
       fwrite(&pt_base_z, sizeof(float), 1, fp);
+
+      outFile.write((char*)&pt_base_x,sizeof(float));
+      outFile.write((char*)&pt_base_y,sizeof(float));
+      outFile.write((char*)&pt_base_z,sizeof(float));
     }
   }
+  outFile.close();
   fclose(fp);
 }
 
